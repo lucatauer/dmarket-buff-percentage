@@ -1,11 +1,12 @@
-function addBuffPercentage() {
-    console.log('addBuffPercentage called');
-
-    // fetch the data
-    fetch('http://api.skinpricer.com/lowest_offer.json')
-        .then(response => response.json())
-        .then(data => {
-
+chrome.runtime.sendMessage('getData', data => {
+    function addBuffPercentage() {
+        console.log('addBuffPercentage called');
+    
+        if (!data) {
+            console.log('Data not available');
+            return;
+        }
+    
         const images = document.querySelectorAll('img');
     
         // loop through each image
@@ -39,7 +40,7 @@ function addBuffPercentage() {
                     dmarketPrice = parseFloat(prevDiv.innerText.match(/\$((\d\s)?\d{1,3}(\.\d{2})?)/)[1].replace(/\s/g, ''));
                 }
                 catch(error) {
-                    console.log('${altText} not rendered');
+                
                 }
                 
                 const price = data[altText].USD;
@@ -59,17 +60,18 @@ function addBuffPercentage() {
                     p.classList.remove('red', 'orange');
                 }
             }
-        });
-    })
-    .catch(error => console.error('Failed to load data:', error));
-}
+        }); 
+    }
   
-addBuffPercentage();
+    addBuffPercentage();
   
-// observe the body for changes and call the function with a delay of 300 ms after the last observed mutation
-let timeoutId;
-const observer = new MutationObserver(mutationsList => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(addBuffPercentage, 300);
+    let timeoutId = null;
+    const observer = new MutationObserver(() => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            addBuffPercentage();
+            timeoutId = null;
+        }, 1000);
+    });
+    observer.observe(document.body, { subtree: true, childList: true });
 });
-observer.observe(document.body, { subtree: true, childList: true });
