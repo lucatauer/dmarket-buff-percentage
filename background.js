@@ -14,6 +14,16 @@ setInterval(fetchData, 5 * 60 * 1000);
 
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   if (message === 'getData') {
-    sendResponse(data);
+    if (data !== null) {
+      sendResponse(data);
+    } else {
+      const intervalId = setInterval(() => {
+        if (data !== null) {
+          clearInterval(intervalId);
+          sendResponse(data);
+        }
+      }, 100);
+    }
   }
 });
+
